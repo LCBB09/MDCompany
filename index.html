@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MD Company</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,500;0,700;0,800;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -356,7 +360,7 @@
   .admin-thumb{
     position:relative; width:38px; height:38px; border-radius:6px; overflow:hidden; border:1px solid var(--line);
   }
-  .admin-thumb img{width:100%; height:100%; object-fit:contain; display:block; background:var(--surface-2);}
+  .admin-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   .admin-thumb .thumb-remove{
     position:absolute; top:0; right:0; background:rgba(0,0,0,0.7); color:#fff; border:none;
     width:14px; height:14px; font-size:10px; line-height:1; cursor:pointer;
@@ -396,11 +400,6 @@
   .admin-new h3{font-size:22px; margin-bottom:14px;}
   .admin-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 14px;}
   .admin-new .login-submit{margin-top:6px;}
-  .sync-badge{
-    font-size:11px; color:var(--muted); margin:-6px 0 18px; display:flex; align-items:center; gap:6px;
-  }
-  .sync-dot{width:7px; height:7px; border-radius:50%; background:#6fbf73; display:inline-block;}
-  .sync-dot.off{background:#e08585;}
   @media (max-width:720px){
     .admin-product-row{grid-template-columns:1fr; text-align:left;}
     .admin-grid{grid-template-columns:1fr;}
@@ -426,14 +425,10 @@
     <button type="button" class="admin-toggle" id="adminToggle" onclick="showAdminField()">Entrar como administrador</button>
     <div class="admin-box" id="adminBox">
       <div class="field">
-        <label for="adminEmail">E-mail</label>
-        <input type="email" id="adminEmail" placeholder="admin@mdcompany.com">
-      </div>
-      <div class="field">
         <label for="adminSenha">Senha</label>
         <input type="password" id="adminSenha" placeholder="••••">
       </div>
-      <p class="field-error" id="adminError">E-mail ou senha incorretos.</p>
+      <p class="field-error" id="adminError">Senha incorreta.</p>
       <button type="button" class="login-submit admin-submit" onclick="doAdminLogin()">Entrar como admin</button>
     </div>
   </div>
@@ -467,8 +462,7 @@
 
 <section class="admin-panel" id="adminPanel" style="display:none;">
   <h2>Painel administrativo</h2>
-  <p class="admin-sub">Edite preços e fotos dos produtos, ou cadastre uma peça nova. As alterações agora são salvas num banco de dados e valem para todos os visitantes do site.</p>
-  <p class="sync-badge" id="syncBadge"><span class="sync-dot" id="syncDot"></span> <span id="syncText">Conectando ao banco de dados...</span></p>
+  <p class="admin-sub">Edite preços e fotos dos produtos, ou cadastre uma peça nova. As alterações valem só para esta sessão do navegador.</p>
 
   <div id="adminProductList"></div>
 
@@ -543,30 +537,7 @@
 <div class="overlay" id="modalOverlay" onclick="closeProduct()"></div>
 <div class="product-modal" id="productModal"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-  import {
-    getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
-  import {
-    getAuth, signInWithEmailAndPassword
-  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBBzw47ViFQkqvVs2fej9pKHjJafircukc",
-    authDomain: "mdcompany-d3a35.firebaseapp.com",
-    projectId: "mdcompany-d3a35",
-    storageBucket: "mdcompany-d3a35.firebasestorage.app",
-    messagingSenderId: "785419996527",
-    appId: "1:785419996527:web:4834f6d576e2ad57262c9a"
-  };
-
-  const fbApp = initializeApp(firebaseConfig);
-  const db = getFirestore(fbApp);
-  const auth = getAuth(fbApp);
-  const productsCol = collection(db, 'products');
-  const categoriesCol = collection(db, 'categories');
-
+<script>
   let buyer = null;
 
   function doLogin(e){
@@ -586,21 +557,19 @@
   function showAdminField(){
     document.getElementById('adminBox').classList.add('open');
     document.getElementById('adminToggle').style.display = 'none';
-    document.getElementById('adminEmail').focus();
+    document.getElementById('adminSenha').focus();
   }
 
-  async function doAdminLogin(){
-    const email = document.getElementById('adminEmail').value.trim();
+  function doAdminLogin(){
     const senha = document.getElementById('adminSenha').value;
     const errorEl = document.getElementById('adminError');
-    try{
-      await signInWithEmailAndPassword(auth, email, senha);
-      errorEl.style.display = 'none';
-      buyer = {nome:'Administrador', isAdmin:true};
-      enterSite();
-    }catch(err){
+    if(senha !== '1717'){
       errorEl.style.display = 'block';
+      return;
     }
+    errorEl.style.display = 'none';
+    buyer = {nome:'Administrador', isAdmin:true};
+    enterSite();
   }
 
   function enterSite(){
@@ -620,8 +589,12 @@
   const GENERIC_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l-2 2v2H7L3 11v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-9l-4-4h-3V5z"/><path d="M9 7a3 3 0 0 0 6 0"/></svg>';
   const CAT_PALETTE = ['#b8b8bc', '#d4d4d8', '#9a9aa0', '#c4c4c9', '#a8a8ae'];
 
-  let CATEGORIES = [];
-  let PRODUCTS = [];
+  let CATEGORIES = [
+    {id:'moletom', label:'Moletons', color:'var(--olive)'},
+    {id:'calca', label:'Calças', color:'var(--rust)'},
+    {id:'short', label:'Shorts', color:'var(--amber)'},
+    {id:'bone', label:'Bonés', color:'var(--olive)'},
+  ];
 
   function getCategory(id){ return CATEGORIES.find(c => c.id === id); }
   function catLabel(id){ const c = getCategory(id); return c ? c.label : id; }
@@ -632,6 +605,17 @@
     return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
+
+  const PRODUCTS = [
+    {id:1, cat:'moletom', nome:'Moletom Canguru Chumbo', preco:139, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:2, cat:'moletom', nome:'Moletom Careca Terracota', preco:119, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:3, cat:'calca', nome:'Calça Cargo Verde Musgo', preco:159, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:4, cat:'calca', nome:'Calça Reta Bege', preco:129, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:5, cat:'short', nome:'Short Moletom Grafite', preco:79, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:6, cat:'short', nome:'Short Tactel Areia', preco:59, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:7, cat:'bone', nome:'Boné Aba Curva Preto', preco:69, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+    {id:8, cat:'bone', nome:'Boné Trucker Mostarda', preco:59, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}},
+  ];
 
   const cart = [];
   let activeCat = 'todos';
@@ -644,11 +628,11 @@
     catalogEl.innerHTML = list.map(p => {
       const hasPhoto = p.photos && p.photos.length > 0;
       const artInner = hasPhoto
-        ? `<img src="${p.photos[0]}" style="width:100%; height:100%; object-fit:contain;">`
+        ? `<img src="${p.photos[0]}" style="width:100%; height:100%; object-fit:cover;">`
         : catIcon(p.cat);
       return `
       <div class="card">
-        <button class="card-art" style="background:${catColor(p.cat)}22; color:${catColor(p.cat)}" onclick="openProduct('${p.id}')" aria-label="Ver fotos de ${p.nome}">
+        <button class="card-art" style="background:${catColor(p.cat)}22; color:${catColor(p.cat)}" onclick="openProduct(${p.id})" aria-label="Ver fotos de ${p.nome}">
           <span class="tagline">${catLabel(p.cat)}</span>
           ${artInner}
         </button>
@@ -657,11 +641,13 @@
           <div class="price-row">
             <span class="price">R$ ${p.preco}</span>
           </div>
-          <button class="add-btn" onclick="openProduct('${p.id}')">Ver fotos e tamanho</button>
+          <button class="add-btn" onclick="openProduct(${p.id})">Ver fotos e tamanho</button>
         </div>
       </div>`;
     }).join('');
   }
+
+  let nextProductId = 9;
 
   function toggleAdminPanel(){
     const panel = document.getElementById('adminPanel');
@@ -681,7 +667,7 @@
       const thumbsHtml = (p.photos || []).map((src, i) => `
         <div class="admin-thumb">
           <img src="${src}">
-          <button class="thumb-remove" onclick="removePhoto('${p.id}', ${i})" aria-label="Remover foto">×</button>
+          <button class="thumb-remove" onclick="removePhoto(${p.id}, ${i})" aria-label="Remover foto">×</button>
         </div>`).join('');
       return `
       <div class="admin-product-row">
@@ -691,75 +677,106 @@
         </div>
         <div>
           <input type="number" class="price-input" value="${p.preco}" min="0" step="1"
-            onchange="updatePrice('${p.id}', this.value)">
+            onchange="updatePrice(${p.id}, this.value)">
         </div>
         <div class="admin-thumbs">
           ${thumbsHtml}
           <label class="admin-file-btn">
             + Foto
-            <input type="file" accept="image/*" multiple onchange="addPhoto('${p.id}', this.files)">
+            <input type="file" accept="image/*" multiple onchange="addPhoto(${p.id}, this.files)">
           </label>
         </div>
         <div class="admin-stock">
           ${['P','M','G'].map(s => {
             const ativo = !p.stock || p.stock[s] !== false;
-            return `<button type="button" class="stock-toggle ${ativo ? '' : 'inativo'}" onclick="toggleStock('${p.id}', '${s}')">${s} · ${ativo ? 'Em estoque' : 'Esgotado'}</button>`;
+            return `<button type="button" class="stock-toggle ${ativo ? '' : 'inativo'}" onclick="toggleStock(${p.id}, '${s}')">${s} · ${ativo ? 'Em estoque' : 'Esgotado'}</button>`;
           }).join('')}
         </div>
-        <button class="admin-remove-product" onclick="removeProduct('${p.id}')">Excluir</button>
+        <button class="admin-remove-product" onclick="removeProduct(${p.id})">Excluir</button>
       </div>`;
     }).join('');
   }
 
-  async function toggleStock(id, size){
+  function toggleStock(id, size){
     const p = PRODUCTS.find(x => x.id === id);
-    const stock = {...(p.stock || {P:true,M:true,G:true})};
-    stock[size] = stock[size] === false ? true : false;
-    await updateDoc(doc(db, 'products', id), { stock });
+    if(!p.stock) p.stock = {P:true,M:true,G:true};
+    p.stock[size] = p.stock[size] === false ? true : false;
+    renderAdminPanel();
+    if(currentProductId === id) renderProductModal(id);
   }
 
-  async function updatePrice(id, value){
-    await updateDoc(doc(db, 'products', id), { preco: parseFloat(value) || 0 });
-  }
-
-  function readFilesAsDataUrls(files){
-    return Promise.all(files.map(file => new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsDataURL(file);
-    })));
-  }
-
-  async function addPhoto(id, fileList){
+  function updatePrice(id, value){
     const p = PRODUCTS.find(x => x.id === id);
+    p.preco = parseFloat(value) || 0;
+    renderCatalog();
+    if(currentProductId === id) renderProductModal(id);
+  }
+
+  function addPhoto(id, fileList){
+    const p = PRODUCTS.find(x => x.id === id);
+    if(!p.photos) p.photos = [];
     const files = Array.from(fileList);
-    const novasFotos = await readFilesAsDataUrls(files);
-    const photos = [...novasFotos, ...(p.photos || [])];
-    await updateDoc(doc(db, 'products', id), { photos });
+    const novasFotos = new Array(files.length);
+    let pending = files.length;
+    files.forEach((file, i) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        novasFotos[i] = reader.result;
+        pending--;
+        if(pending === 0){
+          p.photos = [...novasFotos, ...p.photos];
+          renderAdminPanel();
+          renderCatalog();
+          if(currentProductId === id) renderProductModal(id);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
-  async function removePhoto(id, index){
+  function removePhoto(id, index){
     const p = PRODUCTS.find(x => x.id === id);
-    const photos = [...(p.photos || [])];
-    photos.splice(index, 1);
-    await updateDoc(doc(db, 'products', id), { photos });
+    p.photos.splice(index, 1);
+    renderAdminPanel();
+    if(currentProductId === id) renderProductModal(id);
   }
 
-  async function removeProduct(id){
-    await deleteDoc(doc(db, 'products', id));
+  function removeProduct(id){
+    const idx = PRODUCTS.findIndex(x => x.id === id);
+    if(idx === -1) return;
+    PRODUCTS.splice(idx, 1);
+    renderAdminPanel();
+    renderCatalog();
   }
 
-  async function addProduct(e){
+  function addProduct(e){
     e.preventDefault();
     const nome = document.getElementById('npNome').value.trim();
     const cat = document.getElementById('npCategoria').value;
     const preco = parseFloat(document.getElementById('npPreco').value) || 0;
     const files = Array.from(document.getElementById('npFotos').files);
-    const photos = await readFilesAsDataUrls(files);
 
-    await addDoc(productsCol, {
-      cat, nome, preco, medida:'', sizes:['P','M','G'], photos, stock:{P:true,M:true,G:true}
-    });
+    const novo = {id: nextProductId++, cat, nome, preco, medida:'', sizes:['P','M','G'], photos:[], stock:{P:true,M:true,G:true}};
+    PRODUCTS.push(novo);
+
+    let pending = files.length;
+    if(pending === 0){
+      renderAdminPanel();
+      renderCatalog();
+    } else {
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          novo.photos.push(reader.result);
+          pending--;
+          if(pending === 0){
+            renderAdminPanel();
+            renderCatalog();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
 
     document.getElementById('newProductForm').reset();
     return false;
@@ -787,11 +804,10 @@
 
   function renderProductModal(id){
     const p = PRODUCTS.find(x => x.id === id);
-    if(!p){ closeProduct(); return; }
     const size = selectedSize[id];
     const hasPhotos = p.photos && p.photos.length > 0;
     const slidesHtml = hasPhotos
-      ? p.photos.map(src => `<div class="photo-slide" style="background:${catColor(p.cat)}22;"><img src="${src}" style="width:100%; height:100%; object-fit:contain;"></div>`).join('')
+      ? p.photos.map(src => `<div class="photo-slide"><img src="${src}" style="width:100%; height:100%; object-fit:cover;"></div>`).join('')
       : PHOTO_LABELS.map((label, i) => `
         <div class="photo-slide" style="background:${catColor(p.cat)}22; color:${catColor(p.cat)}; filter:${i === 1 ? 'grayscale(0.3)' : i === 2 ? 'contrast(1.3)' : 'none'}">
           ${catIcon(p.cat)}
@@ -803,7 +819,7 @@
       const disponivel = !p.stock || p.stock[s] !== false;
       return `
       <button class="modal-size-btn ${selectedSize[id] === s ? 'selected' : ''} ${!disponivel ? 'out-of-stock' : ''}"
-        ${!disponivel ? 'disabled' : ''} onclick="selectModalSize('${id}', '${s}')">
+        ${!disponivel ? 'disabled' : ''} onclick="selectModalSize(${id}, '${s}')">
         ${s}${!disponivel ? '<br><span class=\'out-label\'>Esgotado</span>' : ''}
       </button>`;
     }).join('');
@@ -817,7 +833,7 @@
         <span class="modal-price">R$ ${p.preco}</span>
         <span class="size-label">Tamanho</span>
         <div class="modal-sizes">${sizesHtml}</div>
-        <button class="modal-add" id="modalAddBtn" ${!size ? 'disabled' : ''} onclick="addToCart('${id}'); closeProduct(); toggleDrawer(true);">
+        <button class="modal-add" id="modalAddBtn" ${!size ? 'disabled' : ''} onclick="addToCart(${id}); closeProduct(); toggleDrawer(true);">
           ${size ? 'Adicionar à sacola' : 'Escolha um tamanho'}
         </button>
       </div>
@@ -904,7 +920,7 @@
     `).join('')}</div>`;
   }
 
-  async function addCategory(e){
+  function addCategory(e){
     e.preventDefault();
     const input = document.getElementById('ncNome');
     const label = input.value.trim();
@@ -917,12 +933,15 @@
       id = `${id}-${n}`;
     }
     const color = CAT_PALETTE[CATEGORIES.length % CAT_PALETTE.length];
-    await setDoc(doc(db, 'categories', id), { label, color });
+    CATEGORIES.push({id, label, color});
     input.value = '';
+    renderTabs();
+    renderCategoryOptions();
+    renderCategoryAdminList();
     return false;
   }
 
-  async function deleteCategory(id){
+  function deleteCategory(id){
     const cat = getCategory(id);
     if(!cat) return;
     const temProdutos = PRODUCTS.some(p => p.cat === id);
@@ -930,44 +949,22 @@
       ? `Excluir "${cat.label}" também vai excluir os produtos dessa categoria. Confirmar?`
       : `Excluir a categoria "${cat.label}"?`;
     if(!confirm(confirmMsg)) return;
-    await deleteDoc(doc(db, 'categories', id));
-    const toDelete = PRODUCTS.filter(p => p.cat === id);
-    await Promise.all(toDelete.map(p => deleteDoc(doc(db, 'products', p.id))));
+    CATEGORIES = CATEGORIES.filter(c => c.id !== id);
+    for(let i = PRODUCTS.length - 1; i >= 0; i--){
+      if(PRODUCTS[i].cat === id) PRODUCTS.splice(i, 1);
+    }
     if(activeCat === id) activeCat = 'todos';
-  }
-
-  onSnapshot(productsCol, (snap) => {
-    PRODUCTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderCatalog();
-    renderAdminPanel();
-    if(currentProductId) renderProductModal(currentProductId);
-    const dot = document.getElementById('syncDot');
-    const text = document.getElementById('syncText');
-    if(dot && text){ dot.classList.remove('off'); text.textContent = 'Conectado ao banco de dados — alterações visíveis para todos os visitantes'; }
-  }, () => {
-    const dot = document.getElementById('syncDot');
-    const text = document.getElementById('syncText');
-    if(dot && text){ dot.classList.add('off'); text.textContent = 'Sem conexão com o banco de dados'; }
-  });
-
-  onSnapshot(categoriesCol, (snap) => {
-    CATEGORIES = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderTabs();
     renderCategoryOptions();
     renderCategoryAdminList();
     renderCatalog();
-  });
+  }
 
   renderTabs();
+  renderCategoryOptions();
+  renderCategoryAdminList();
   renderCatalog();
   renderCart();
-
-  Object.assign(window, {
-    doLogin, showAdminField, doAdminLogin, toggleAdminPanel, toggleDrawer, checkout,
-    openProduct, closeProduct, addCategory, deleteCategory, updatePrice, addPhoto,
-    removePhoto, removeProduct, addProduct, selectModalSize, addToCart, removeFromCart,
-    onPhotoScroll, toggleStock
-  });
 </script>
 
 </body>
